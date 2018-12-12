@@ -113,11 +113,12 @@ const inventory = [
   }
 ];
 
+const cartItems = [];
 
 function itemTemplate(item) {
   return `
     <li class="list-item">
-    <div class="add-to-cart"><i class="material-icons">shopping_cart</i></div>
+    <div class="add-to-cart disable-select" onclick="addToCart(${item.ItemId})"><i class="material-icons">shopping_cart</i></div>
     <div class="img-container">
       <img class="item-img grow" src="${item.Image}" />
     </div>
@@ -130,3 +131,41 @@ function itemTemplate(item) {
 }
 
 document.querySelector(".shopping-list").innerHTML = `${inventory.map(itemTemplate).join("")}`;
+
+function addToCart(itemId) {
+  let item = cartItems.find(item => item.ItemId == itemId);
+  if (!item) {
+    let newItem = inventory.find(item => item.ItemId == itemId);
+    cartItems.push({ ...newItem, Quantity: 1, Total: newItem.Price });
+  }
+  else {
+    item.Quantity = item.Quantity + 1;
+    item.Total = item.Price * item.Quantity;
+  }
+  updateCart();
+}
+
+function showCart() {
+  if (cartItems.length > 0) {
+    document.querySelector(".cart-list-container").classList.toggle('show');
+  }
+}
+
+function cartItemTemplate(item) {
+  return `
+    <li class="list-item">
+      <span class="item-name">${item.ItemName} (${item.Quantity})</span> - <span class="price currency">${item.Total}</span>
+    </li>
+  `;
+}
+
+function updateCart() {
+  let templateString = `
+    ${cartItems.map(cartItemTemplate).join("")}
+    <li class="list-item list-total">
+      <span class="price currency">${cartItems.map(item => item.Total).reduce((total, value) => parseInt(total) + parseInt(value))}</span>
+    </li>
+  `;
+  document.querySelector(".item-count").innerHTML = `Cart(${cartItems.length})`;
+  document.querySelector(".cart-list").innerHTML = templateString;
+}
